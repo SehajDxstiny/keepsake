@@ -1,0 +1,37 @@
+{
+    "_id": 491548262768050191,
+    "date": "2024-11-02",
+    "entries": [
+        {
+            "question_id": 1,
+            "question": "What do I remember this day by?",
+            "response": "hi"
+        },
+        {
+            "question_id": 2,
+            "question": "What did I work on today?",
+            "response": "this"
+        },
+        {
+            "question_id": 3,
+            "question": "How was your day? (S-tier to D-tier)",
+            "response": "s"
+        },
+        {
+            "question_id": 4,
+            "question": "Did you complete any of these habits today?",
+            "response": {
+                "Meditation": "yes",
+                "Exercise": "yes",
+                "Good Diet": "yes",
+                "Reading": "yes"
+            }
+        },
+        {
+            "question_id": 5,
+            "question": "Any new thoughts you'd like to record?",
+            "response": "okayy"
+        }
+    ],
+    "Partial/Incomplete": "no"
+}
