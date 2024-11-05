@@ -2,3 +2,4 @@
 .env
 /other
 __pycache__/
+discord.log
