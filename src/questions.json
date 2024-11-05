@@ -1,0 +1,140 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "text": "What do I remember this day by? (interesting life detail, Upload photos if you haven't already)",
+      "type": "text",
+      "frequency": "daily"
+    },
+    {
+      "id": 3,
+      "text": "Did you complete any of these habits today?",
+      "type": "habit",
+      "frequency": "daily",
+      "habits": [
+        {
+          "name": "Meditation",
+          "emoji_checkmark": "✅",
+          "emoji_crossmark": "❌"
+        },
+        {
+          "name": "Exercise", 
+          "emoji_checkmark": "✅",
+          "emoji_crossmark": "❌"
+        },
+        {
+          "name": "Good Diet",
+          "emoji_checkmark": "✅", 
+          "emoji_crossmark": "❌"
+        },
+        {
+          "name": "Reading",
+          "emoji_checkmark": "✅",
+          "emoji_crossmark": "❌"
+        },
+        {
+          "name": "Morning/Evening Routine",
+          "emoji_checkmark": "✅",
+          "emoji_crossmark": "❌"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "text": "How was the day? (S-tier to D-tier)",
+      "type": "rating",
+      "frequency": "daily",
+      "options": ["S", "A", "B", "C", "D"]
+    },
+    {
+      "id": 5,
+      "text": "How could I have improved today? What should I be doing?",
+      "type": "text",
+      "frequency": "daily"
+    },
+    {
+      "id": 6,
+      "text": "Did anything stress me out today?",
+      "type": "text", 
+      "frequency": "daily"
+    },
+    {
+      "id": 7,
+      "text": "Where did I let my animal mind win?",
+      "type": "text",
+      "frequency": "daily"
+    },
+    {
+      "id": 8,
+      "text": "How did I feel emotionally throughout the day?",
+      "type": "text",
+      "frequency": "daily"
+    },
+    {
+      "id": 9,
+      "text": "Any new thoughts or something you'd like to record?",
+      "type": "text",
+      "frequency": "daily"
+    },
+    {
+      "id": 10,
+      "text": "What are you thinking about work/life at this moment?",
+      "type": "text",
+      "frequency": "daily"
+    },
+    {
+      "id": 11,
+      "text": "Free writing for 5 minutes (feelings, thoughts, emotions, problems, confusions, highlights)",
+      "type": "text",
+      "frequency": "daily"
+    },
+    {
+      "id": 13,
+      "text": "What do I have in mind these days (moving forward)?",
+      "type": "text",
+      "frequency": "weekly"
+    },
+    {
+      "id": 14,
+      "text": "Multiverse is a game - how to play it?",
+      "type": "text",
+      "frequency": "weekly"
+    },
+    {
+      "id": 15,
+      "text": "Any new people I met?",
+      "type": "text",
+      "frequency": "weekly"
+    },
+    {
+      "id": 16,
+      "text": "What should be some new optimizations in life?",
+      "type": "text",
+      "frequency": "biweekly"
+    },
+    {
+      "id": 17,
+      "text": "What music am I listening to?",
+      "type": "text",
+      "frequency": "biweekly"
+    },
+    {
+      "id": 18,
+      "text": "How did my MAIN life document change? (Track changes in life/work document)",
+      "type": "text",
+      "frequency": "twicemonthly"
+    },
+    {
+      "id": 19,
+      "text": "What am I thinking about people I met in my life?",
+      "type": "text",
+      "frequency": "monthly"
+    }, 
+    {
+      "id": 20,
+      "text": "anything content.",
+      "type": "text",
+      "frequency": "daily"
+    }
+  ]
+}

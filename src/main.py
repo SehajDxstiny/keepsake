@@ -7,6 +7,10 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from pytz import timezone
 from dotenv import load_dotenv
+import sys 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from question_manager import get_questions_for_today
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -22,10 +26,6 @@ intents.message_content = True
 intents.members = True
 intents.guilds = True
 client = discord.Client(intents=intents)
-
-# Load questions from JSON file
-with open('questions.json', 'r') as f:
-    questions_data = json.load(f)
 
 # Directory where journal entries will be saved
 DATA_DIR = 'journal_entries'
@@ -49,6 +49,9 @@ def check_incomplete_entry(entry):
 
 async def send_daily_questions():
     logger.info("Starting daily questions routine...")
+    
+    # Get today's questions at the start of the routine
+    todays_questions = get_questions_for_today()
     
     for guild in client.guilds:
         logger.info(f"Processing guild: {guild.name}")
@@ -78,13 +81,14 @@ async def send_daily_questions():
                 "_id": user_id,
                 'date': today,
                 'entries': [],
-                'Partial/Incomplete': 'no'  # Will be updated at the end
+                'Partial/Incomplete': 'no'
             }
             
-            await echoes_channel.send(f"Hey {member.mention}! It's time to fill out you daily journal. Let's get started!")
+            await echoes_channel.send(f"Hey {member.mention}! It's time to fill out your daily journal. Let's get started!")
 
             try:
-                for question in questions_data['questions']:
+                # Change this loop to use todays_questions instead of questions_data
+                for question in todays_questions:
                     # Send question without mentioning the user
                     await echoes_channel.send(f"{question['text']}")
                     
@@ -98,7 +102,8 @@ async def send_daily_questions():
                         entry['entries'].append({
                             'question_id': question['id'],
                             'question': question['text'],
-                            'response': response.content
+                            'response': response.content,
+                            'frequency': question.get('frequency', 'daily')  # Add frequency to track in entries
                         })
 
                     elif question['type'] == 'habit':
@@ -121,14 +126,15 @@ async def send_daily_questions():
                                 )
                                 
                                 habits_responses[habit["name"]] = 'yes' if str(reaction.emoji) == '✅' else 'no'
-                            except Exception as e:
+                            except Exception as e: 
                                 logger.error(f"Error processing habit reaction: {str(e)}")
                                 habits_responses[habit["name"]] = None
                         
                         entry["entries"].append({
                             'question_id': question["id"],
                             'question': question["text"],
-                            'response': habits_responses
+                            'response': habits_responses,
+                            'frequency': question.get('frequency', 'daily')  # Add frequency to track in entries
                         })
 
             except Exception as e:
@@ -143,7 +149,7 @@ async def send_daily_questions():
                 filename = f"{DATA_DIR}/{user_id}_{today}.json"
                 with open(filename, 'w') as f:
                     json.dump(entry, f, indent=4)
-                logger.info(f"Saved entry for {Amember.name}")
+                logger.info(f"Saved entry for {member.name}")
             except Exception as e:
                 logger.error(f"Error saving entry for {member.name}: {str(e)}")
 
