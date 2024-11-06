@@ -9,6 +9,8 @@ from apscheduler.triggers.cron import CronTrigger
 from pytz import timezone
 from dotenv import load_dotenv
 import sys 
+import boto3
+from botocore.exceptions import NoCredentialsError
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from question_manager import get_questions_for_today, update_question_timestamp
@@ -37,6 +39,14 @@ if not os.path.exists(DATA_DIR):
 if not os.path.exists(QUESTIONS_FILE):
     logger.error(f"Questions file not found at {QUESTIONS_FILE}")
     raise FileNotFoundError(f"Questions file not found at {QUESTIONS_FILE}")
+
+# S3 Configuration
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+)
+BUCKET_NAME = os.getenv('AWS_BUCKET_NAME')
 
 def check_incomplete_entry(entry):
     """Check if any responses in the entry are incomplete."""
@@ -110,6 +120,23 @@ async def handle_habit_question(question, member, echoes_channel, entry):
     })
     return True
 
+async def upload_to_s3(file_path, s3_path):
+    """Upload a file to S3 bucket."""
+    try:
+        if not file_path or not s3_path or not BUCKET_NAME:
+            logger.error(f"Invalid parameters for S3 upload: file_path={file_path}, s3_path={s3_path}, bucket={BUCKET_NAME}")
+            return False
+            
+        s3_client.upload_file(file_path, BUCKET_NAME, s3_path)
+        logger.info(f"Successfully uploaded {file_path} to S3")
+        return True
+    except NoCredentialsError:
+        logger.error("AWS credentials not available")
+        return False
+    except Exception as e:
+        logger.error(f"Error uploading to S3: {str(e)}")
+        return False
+
 async def send_daily_questions():
     """Main function to send daily questions and collect responses."""
     logger.info("Starting daily questions routine...")
@@ -156,16 +183,31 @@ async def send_daily_questions():
                     if success and question.get('frequency') != 'daily':
                         update_question_timestamp(question['id'], question['frequency'])
                 
-                # Save entry
+                # Save entry locally
                 entry['Partial/Incomplete'] = 'yes' if check_incomplete_entry(entry) else 'no'
                 filename = os.path.join(DATA_DIR, f"{member.id}_{entry['date']}.json")
                 
                 with open(filename, 'w') as f:
                     json.dump(entry, f, indent=4)
-                logger.info(f"Saved entry for {member.name}")
+                logger.info(f"Saved entry locally for {member.name}")
+
+                # Upload to S3
+                s3_path = f"daily_entries/{member.id}_{entry['date']}.json"
+                s3_upload_success = await upload_to_s3(filename, s3_path)
+
+                # Send JSON file to user
+                await echoes_channel.send(
+                    "*Here's your journal entry:*",
+                    file=discord.File(filename)
+                )
                 
-                await echoes_channel.send("*Today's responses have been saved.*")
-                
+                status_message = "*Today's responses have been saved"
+                if s3_upload_success:
+                    status_message += " locally and to cloud storage.*"
+                else:
+                    status_message += " locally. (Cloud backup failed)*"
+                await echoes_channel.send(status_message)
+
             except Exception as e:
                 logger.error(f"Error processing questions for {member.name}: {str(e)}")
                 await echoes_channel.send("An error occurred while processing your responses.")
@@ -182,8 +224,8 @@ async def on_ready():
         scheduler.add_job(
             send_daily_questions,
             CronTrigger(
-                hour=15,
-                minute=45,
+                hour=17,
+                minute=37,
                 timezone=ist_timezone
             )
         )
