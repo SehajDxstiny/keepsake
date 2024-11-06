@@ -10,11 +10,9 @@ from pytz import timezone
 from dotenv import load_dotenv
 import sys 
 
-# Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from question_manager import get_questions_for_today, update_question_timestamp
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
@@ -22,17 +20,14 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='a'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-# Load environment variables
 load_dotenv()
 
-# Initialize Discord client
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 intents.guilds = True
 client = discord.Client(intents=intents)
 
-# Set up data directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, 'journal_entries')
 QUESTIONS_FILE = os.path.join(BASE_DIR, 'src', 'questions.json')
@@ -48,7 +43,7 @@ def check_incomplete_entry(entry):
     # Check text/rating responses
     incomplete = any(e['response'] is None for e in entry['entries'])
     
-    # Check habit responses
+
     for e in entry['entries']:
         if e.get('response') and isinstance(e['response'], dict):
             if any(v is None for v in e['response'].values()):
@@ -63,7 +58,7 @@ async def handle_text_question(question, member, echoes_channel, entry):
         response = await client.wait_for(
             'message',
             check=lambda m: m.author == member and m.channel == echoes_channel,
-            timeout=300  # 5 minutes timeout
+            timeout=30000  # 5 minutes timeout
         )
         
         entry['entries'].append({
@@ -184,7 +179,6 @@ async def on_ready():
         scheduler = AsyncIOScheduler()
         ist_timezone = timezone('Asia/Kolkata')
         
-        # Schedule for 9 AM IST daily
         scheduler.add_job(
             send_daily_questions,
             CronTrigger(
