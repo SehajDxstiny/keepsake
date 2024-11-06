@@ -40,7 +40,6 @@ if not os.path.exists(QUESTIONS_FILE):
     logger.error(f"Questions file not found at {QUESTIONS_FILE}")
     raise FileNotFoundError(f"Questions file not found at {QUESTIONS_FILE}")
 
-# S3 Configuration
 s3_client = boto3.client(
     's3',
     aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
@@ -49,8 +48,6 @@ s3_client = boto3.client(
 BUCKET_NAME = os.getenv('AWS_BUCKET_NAME')
 
 def check_incomplete_entry(entry):
-    """Check if any responses in the entry are incomplete."""
-    # Check text/rating responses
     incomplete = any(e['response'] is None for e in entry['entries'])
     
 
@@ -63,12 +60,11 @@ def check_incomplete_entry(entry):
     return incomplete
 
 async def handle_text_question(question, member, echoes_channel, entry):
-    """Handle text or rating type questions."""
     try:
         response = await client.wait_for(
             'message',
             check=lambda m: m.author == member and m.channel == echoes_channel,
-            timeout=30000  # 5 minutes timeout
+            timeout=300000  # 
         )
         
         entry['entries'].append({
@@ -89,7 +85,6 @@ async def handle_text_question(question, member, echoes_channel, entry):
         return False
 
 async def handle_habit_question(question, member, echoes_channel, entry):
-    """Handle habit type questions."""
     habits_responses = {}
     
     for habit in question['habits']:
@@ -121,7 +116,6 @@ async def handle_habit_question(question, member, echoes_channel, entry):
     return True
 
 async def upload_to_s3(file_path, s3_path):
-    """Upload a file to S3 bucket."""
     try:
         if not file_path or not s3_path or not BUCKET_NAME:
             logger.error(f"Invalid parameters for S3 upload: file_path={file_path}, s3_path={s3_path}, bucket={BUCKET_NAME}")
@@ -138,7 +132,6 @@ async def upload_to_s3(file_path, s3_path):
         return False
 
 async def send_daily_questions():
-    """Main function to send daily questions and collect responses."""
     logger.info("Starting daily questions routine...")
     
     todays_questions = get_questions_for_today()
@@ -179,11 +172,9 @@ async def send_daily_questions():
                     elif question['type'] == 'habit':
                         success = await handle_habit_question(question, member, echoes_channel, entry)
                     
-                    # Update timestamp only if question was successfully answered
                     if success and question.get('frequency') != 'daily':
                         update_question_timestamp(question['id'], question['frequency'])
                 
-                # Save entry locally
                 entry['Partial/Incomplete'] = 'yes' if check_incomplete_entry(entry) else 'no'
                 filename = os.path.join(DATA_DIR, f"{member.id}_{entry['date']}.json")
                 
@@ -191,11 +182,9 @@ async def send_daily_questions():
                     json.dump(entry, f, indent=4)
                 logger.info(f"Saved entry locally for {member.name}")
 
-                # Upload to S3
                 s3_path = f"daily_entries/{member.id}_{entry['date']}.json"
                 s3_upload_success = await upload_to_s3(filename, s3_path)
 
-                # Send JSON file to user
                 await echoes_channel.send(
                     "*Here's your journal entry:*",
                     file=discord.File(filename)
@@ -214,7 +203,6 @@ async def send_daily_questions():
 
 @client.event
 async def on_ready():
-    """Set up scheduler when bot starts."""
     logger.info(f'Logged in as {client.user}')
     
     try:
@@ -239,7 +227,6 @@ async def on_ready():
 
 @client.event
 async def on_error(event, *args, **kwargs):
-    """Handle any errors that occur."""
     logger.error(f"Error in {event}: {str(args[0])}")
 
 # Run the bot

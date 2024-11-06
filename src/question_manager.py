@@ -3,16 +3,13 @@ import os
 from datetime import datetime
 import logging
 
-# Setup paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TIMESTAMPS_FILE = os.path.join(BASE_DIR, 'other/question_timestamps.json')
 QUESTIONS_FILE = os.path.join(BASE_DIR, 'src', 'questions.json')
 
-# Setup logging
 logger = logging.getLogger('discord')
 
 def validate_question(question):
-    """Validate that a question has all required fields."""
     required_fields = ['id', 'text', 'type']
     valid = all(field in question for field in required_fields)
     if not valid:
@@ -20,7 +17,6 @@ def validate_question(question):
     return valid
 
 def load_timestamps():
-    """Load or create timestamps file."""
     try:
         with open(TIMESTAMPS_FILE, 'r') as f:
             return json.load(f)
@@ -37,7 +33,6 @@ def load_timestamps():
         return timestamps
 
 def save_timestamps(timestamps):
-    """Save timestamps to file."""
     try:
         with open(TIMESTAMPS_FILE, 'w') as f:
             json.dump(timestamps, f, indent=2)
@@ -45,7 +40,6 @@ def save_timestamps(timestamps):
         logger.error(f"Error saving timestamps: {str(e)}")
 
 def should_ask_question(question_id, frequency):
-    """Determine if a question should be asked based on its frequency."""
     if frequency == 'daily':
         return True
         
@@ -74,7 +68,6 @@ def should_ask_question(question_id, frequency):
     return (current_date - last_asked_date).days >= intervals.get(frequency, 0)
 
 def update_question_timestamp(question_id, frequency):
-    """Update the last asked timestamp for a question."""
     if frequency == 'daily':
         return
         
@@ -83,7 +76,6 @@ def update_question_timestamp(question_id, frequency):
     save_timestamps(timestamps)
 
 def get_questions_for_today():
-    """Get the list of questions that should be asked today."""
     try:
         with open(QUESTIONS_FILE, 'r') as f:
             questions_data = json.load(f)
